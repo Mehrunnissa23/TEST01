@@ -1,0 +1,86 @@
+--1)
+SELECT last_name, floor(months_between(SYSDATE,hire_date)/12) AS YEARS,
+floor(MOD(months_between(SYSDATE,hire_date),12)) AS MONTHS FROM employees
+ORDER BY YEARS DESC; 
+
+--2)
+SELECT d.DEPARTMENT_ID, d.DEPARTMENT_NAME, d.LOCATION_ID, COUNT(e.EMPLOYEE_ID) 
+FROM DEPARTMENTS d 
+LEFT JOIN EMPLOYEES e 
+ON d.department_id=e.department_id
+GROUP BY d.DEPARTMENT_ID, d.DEPARTMENT_NAME,d.LOCATION_ID;
+
+--3)
+SELECT LAST_NAME,HIRE_DATE FROM EMPLOYEES WHERE EXTRACT(DAY FROM HIRE_DATE)<16;
+
+--4)
+SELECT LAST_NAME, SALARY, FLOOR(SALARY/1000) AS THOUSANDS FROM EMPLOYEES;
+
+--5)
+SELECT * FROM EMPLOYEES WHERE SALARY>(SELECT MAX(SALARY) FROM EMPLOYEES 
+WHERE DEPARTMENT_ID = 60);
+
+--6)
+DEFINE deptid=&id;
+DECLARE
+v_count NUMBER(10):=0;
+BEGIN
+SELECT COUNT(employee_id) INTO v_count
+FROM EMPLOYEES 
+WHERE DEPARTMENT_ID=&deptid;
+DBMS_OUTPUT.PUT_LINE(v_count||' employee(s) works in department '||&deptid);
+END;
+
+
+--7)
+SET SERVEROUTPUT ON
+DECLARE
+YEAR NUMBER := &year; 
+BEGIN
+IF MOD(year, 4)=0 
+	AND
+	MOD(year, 100)!=0  
+	OR
+	MOD(year, 400)=0 THEN
+	DBMS_OUTPUT.PUT_LINE(year	|| ' is a leap year '); 
+ELSE
+	DBMS_OUTPUT.PUT_LINE(year	|| ' is not a leap year.'); 
+END IF; 
+END; 
+
+--8)
+DEFINE empid=&id;
+DECLARE
+v_salary NUMBER(10);
+v_bonus NUMBER(10):=0;
+v_asalary NUMBER(10):=0;
+BEGIN
+select salary into v_salary
+from EMPLOYEES
+where employee_id=&empid;
+v_asalary:=v_salary*12;
+if v_asalary>=20000 then v_bonus:=2000;
+elsif v_asalary<=19999 then v_bonus:=1500;
+elsif v_asalary<=9999 then v_bonus:=1000;
+END if;
+DBMS_OUTPUT.PUT_LINE('The bonus is '||v_bonus);
+END;
+
+--9)
+SET SERVEROUTPUT ON
+DECLARE
+CURSOR EMP_CUR IS
+SELECT last_name,salary,hire_date FROM employees
+WHERE salary>15000
+and hire_date<'01-FEB-2005';
+V_EMP EMP_CUR%ROWTYPE;
+BEGIN
+OPEN EMP_CUR;
+LOOP
+FETCH EMP_CUR INTO V_EMP;
+EXIT WHEN EMP_CUR%NOTFOUND;
+DBMS_OUTPUT.PUT_LINE( V_EMP.LAST_NAME
+||' earns '||V_EMP.salary||' and joined the organisation on '||V_EMP.HIRE_DATE);
+END LOOP;
+CLOSE EMP_CUR;
+END;
